@@ -90,13 +90,41 @@ def normalise_features(rows, features):
     :param list[dict[str, Any]] rows: a list of data
     :param dict[str, dict[str, bool] features:
     :param str date_format: the format of the date for the time.strptime parser
-    :rtype: tuple[list[dict[str, Any]]
+    :rtype: list[dict[str, Any]
     """
     pass
 
 
-def add_timeseries_features(rows, features):
-    # TODO
+def timeseries_max(timeseries):
+    return max(timeseries)
+
+
+def timeseries_min(timeseries):
+    return min(timeseries)
+
+
+def timeseries_range(timeseries):
+    return timeseries_max(timeseries) - timeseries_min(timeseries)
+
+
+def add_timeseries_features(rows, features, timeseries_features):
+    """Extract some features from timeseries features and add them to the features set
+
+    :param list[dict[str, Any]] rows: a list of data
+    :param dict[str, dict[str, bool] features:
+    :param list[list[str]] timeseries_features:
+    :return The rows with extra features added, along with the extra features' details
+    :rtype tuple(list[dict[str, Any], list[list[str]])
+    """
+    derived_features = {
+        'timeseries_max': {'name': 'timeseries_max', 'is_date': 0, 'is_categorical': 0,
+                           'function': timeseries_max},
+        'timeseries_min': {'name': 'timeseries_min', 'is_date': 0, 'is_categorical': 0,
+                           'function': timeseries_min},
+        'timeseries_range': {'name': 'timeseries_range', 'is_date': 0, 'is_categorical': 0,
+                             'function': timeseries_range},
+    }
+
     return rows
 
 
@@ -131,7 +159,6 @@ def encode_categorical_features(data, features):
     categorical_features = [True if int(features[feature]['is_categorical']) else False
                             for feature in feature_names]
     enc = OneHotEncoder(categorical_features=categorical_features)
-
     return enc.fit_transform(data)
 
 

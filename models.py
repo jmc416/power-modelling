@@ -19,6 +19,7 @@ def load_data_portion(denominator=0, offset=0):
     portion_length = (number_of_rows / denominator) if denominator else number_of_rows
     slice_start = offset * portion_length
     slice_end = slice_start + portion_length
+    print 'Returning %s samples' % portion_length
 
     X, y = preprocessing.labelled_training_data(
         training_rows[slice_start:slice_end], training_labels[slice_start:slice_end],
