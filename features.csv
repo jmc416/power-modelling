@@ -1,0 +1,41 @@
+name,description,is_categorical,is_date
+id,contact id,1,0
+activity_new,category of the company's activity,1,0
+campaign_disc_ele,code of the electricity campaign the customer last subscribed to,1,0
+channel_sales,code of the sales channel,1,0
+cons_12m,electricity consumption of the past 12 months,0,0
+cons_gas_12m,gas consumption of the past 12 months,0,0
+cons_last_month,electricity consumption of the last month,0,0
+date_activ,date of activation of the contract,0,1
+date_end,registered date of the end of the contract,0,1
+date_first_activ,date of first contract of the client,0,1
+date_modif_prod,date of last modification of the product,0,1
+date_renewal,date of the next contract renewal,0,1
+forecast_base_bill_ele,forecasted electricity bill baseline for next month,0,0
+forecast_base_bill_year,forecasted electricity bill baseline for calendar year,0,0
+forecast_bill_12m,forecasted electricity bill baseline for 12 months,0,0
+forecast_cons,forecasted electricity consumption for next month,0,0
+forecast_cons_12m,forecasted electricity consumption for next 12 months,0,0
+forecast_cons_year,forecasted electricity consumption for next calendar year,0,0
+forecast_discount_energy,forecasted value of current discount,0,0
+forecast_meter_rent_12m,forecasted bill of meter rental for the next 12 months,0,0
+forecast_price_energy_p1,forecasted energy price for 1st period,0,0
+forecast_price_energy_p2,forecasted energy price for 2nd period,0,0
+forecast_price_pow_p1,forecasted power price for 1st period,0,0
+has_gas,indicated if client is also a gas client,1,0
+imp_cons,current paid consumption,0,0
+margin_gross_pow_ele,gross margin on power subscription,0,0
+margin_net_pow_ele,net margin on power subscription,0,0
+nb_prod_act,number of active products and services,0,0
+net_margin,total net margin,0,0
+num_years_antig,antiquity of the client (in number of years),0,0
+origin_up,code of the electricity campaign the customer first subscribed to,1,0
+pow_max,subscribed power,0,0
+price_date,reference date,0,1
+price_p1_var,price of energy for the 1st period,0,0
+price_p2_var,price of energy for the 2nd period,0,0
+price_p3_var,price of energy for the 3rd period,0,0
+price_p1_fix,price of power for the 1st period,0,0
+price_p2_fix,price of power for the 2nd period,0,0
+price_p3_fix,price of power for the 3rd period,0,0
+churned,has the client churned over the next 3 months,1,0
