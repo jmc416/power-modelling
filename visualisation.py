@@ -8,16 +8,17 @@ from itertools import groupby
 
 from matplotlib import pyplot as plt
 import numpy as np
+from sklearn.neighbors import KernelDensity
 
 import load
 
 
 def categorical_plot(feature_name, data_rows, label_rows, max_categories=30, ybottom=0.2):
     """"""
-    labels_by_id = {r['id']: r[load.LABEL_NAME] for r in label_rows}
+    churned = build_churned(label_rows)
 
-    no_churn = Counter(r[feature_name] for r in data_rows if not labels_by_id[r['id']])
-    churn = Counter(r[feature_name] for r in data_rows if labels_by_id[r['id']])
+    no_churn = Counter(r[feature_name] for r in data_rows if not churned(r))
+    churn = Counter(r[feature_name] for r in data_rows if churned(r))
 
     all_categories = set(no_churn.keys()).union(set(churn.keys()))
 
@@ -59,3 +60,66 @@ def categorical_plot(feature_name, data_rows, label_rows, max_categories=30, ybo
     plt.ylim([-.01, 1.1])
 
     plt.show()
+
+
+def label_map(label_rows):
+    labels_by_id = {r['id']: r[load.LABEL_NAME] for r in label_rows}
+    return labels_by_id
+
+
+def build_churned(label_rows):
+    labels_by_id = label_map(label_rows)
+    def churned(row):
+        return labels_by_id[row['id']]
+    return churned
+
+
+def continuous_plot(feature_name, data_rows, label_rows, log_x=True):
+    """"""
+    churned = build_churned(label_rows)
+    num_samples = len(data_rows)
+
+    churned_samples = np.zeros([num_samples, 1])
+    no_churned_samples = np.zeros([num_samples, 1])
+    num_churned = 0
+    for i, r in enumerate(data_rows):
+        value = np.float64(r[feature_name])
+        if log_x:
+            if value <= 0:
+                continue
+            else:
+                value = math.log(value, 10)
+        if churned(r):
+            churned_samples[i] = value
+            num_churned += 1
+        else:
+            no_churned_samples[i] = value
+
+    churned_samples = churned_samples[:num_churned]
+    no_churned_samples = no_churned_samples[:(num_samples - num_churned)]
+
+    churned_dist = kde(churned_samples)
+    no_churned_dist = kde(no_churned_samples)
+
+    X_plot = np.linspace(max(min(min(churned_samples), min(no_churned_samples)), 0),
+                         max(max(churned_samples), max(no_churned_samples)),
+                         1000)[1:, np.newaxis]
+
+
+
+    fig, ax = plt.subplots()
+
+    log_dens = churned_dist.score_samples(X_plot)
+    ax.plot(X_plot[:, 0], np.exp(log_dens), '-', label='Churned')
+
+    log_dens = no_churned_dist.score_samples(X_plot)
+    ax.plot(X_plot[:, 0], np.exp(log_dens), '-', label='No Churn')
+
+    ax.legend(loc='upper left')
+    ax.plot(churned_samples[:, 0], -0.005 - 0.01 * np.random.random(churned_samples.shape[0]), '+r')
+    ax.plot(no_churned_samples[:, 0], -0.005 - 0.01 * np.random.random(no_churned_samples.shape[0]),
+            '.b')
+    plt.show()
+
+def kde(churned_samples):
+    return KernelDensity(kernel='gaussian', bandwidth=0.2).fit(churned_samples)
