@@ -53,8 +53,6 @@ def transform_dates(rows, features, date_format=DATE_FORMAT):
     :param str date_format: the format of the date for the time.strptime parser
     :rtype: tuple[list[dict[str, Any]]
     """
-    print 'features', features
-
     def transform(feature, value):
         if feature not in features:
             raise ValueError('Unknown feature')
