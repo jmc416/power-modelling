@@ -1,4 +1,8 @@
+import numpy as np
+
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import ExtraTreesClassifier
 
 import load
 import preprocessing
@@ -34,3 +38,29 @@ def fit_decision_tree(X, y):
 
     return clf
 
+
+def fit_bagged_decision_tree(X, y):
+    clf = BaggingClassifier()
+    clf.fit(X, y)
+    return clf
+
+
+def fit_forest(X, y):
+    forest = ExtraTreesClassifier(n_estimators=250, random_state=0)
+    forest.fit(X, y)
+    return forest
+
+
+def feature_importances(X, y):
+
+    forest = fit_forest(X, y)
+    importances = forest.feature_importances_
+    std = np.std([tree.feature_importances_ for tree in forest.estimators_],
+                 axis=0)
+    indices = np.argsort(importances)[::-1]
+
+    # Print the feature ranking
+    print("Feature ranking:")
+
+    for f in range(X.shape[1]):
+        print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
