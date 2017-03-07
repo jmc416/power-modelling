@@ -2,10 +2,10 @@ import csv
 
 FEATURES_FILE = 'features.csv'
 
-TEST_DATA_FILE = 'ml_case_test_data.csv'
-TRAINING_DATA_FILE = 'ml_case_train_data.csv'
-TRAINING_LABELS_FILE = 'ml_case_train_output.csv'
-TRAINING_HISTORICAL_DATA_FILE = 'ml_case_train_hist_data.csv'
+TEST_DATA_FILE = 'test_data.csv'
+TRAINING_DATA_FILE = 'train_data.csv'
+TRAINING_LABELS_FILE = 'train_output.csv'
+TRAINING_HISTORICAL_DATA_FILE = 'train_hist_data.csv'
 
 LABEL_NAME = 'churned'
 
