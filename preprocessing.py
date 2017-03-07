@@ -4,6 +4,9 @@ import time
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
+EMPTY_DATE_POLICY = 0
+EMPTY_DATUM_POLICY = 0
+
 DATE_FORMAT = '%Y-%m-%d'
 
 
@@ -58,7 +61,7 @@ def transform_dates(rows, features, date_format=DATE_FORMAT):
         elif not int(features[feature]['is_date']):
             return value
         elif not value:
-            return 0
+            return EMPTY_DATE_POLICY
         else:
             return time.mktime(time.strptime(value, date_format))
 
@@ -112,7 +115,7 @@ def vectorise(rows, features):
         for j, feature in enumerate(features):
             value = row.get(feature)
             if value == '':
-                value = 0
+                value = EMPTY_DATUM_POLICY
             X[i, j] = np.float64(value)
     return X
 
