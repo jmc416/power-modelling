@@ -74,52 +74,58 @@ def build_churned(label_rows):
     return churned
 
 
-def continuous_plot(feature_name, data_rows, label_rows, log_x=True):
+def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0.2):
     """"""
     churned = build_churned(label_rows)
     num_samples = len(data_rows)
 
-    churned_samples = np.zeros([num_samples, 1])
-    no_churned_samples = np.zeros([num_samples, 1])
-    num_churned = 0
+    churned_samples = []
+    no_churned_samples = []
     for i, r in enumerate(data_rows):
+        if not r[feature_name]:
+            print 'skip'
+            continue
         value = np.float64(r[feature_name])
         if log_x:
             if value <= 0:
+                print 'skip zero or neg'
                 continue
             else:
                 value = math.log(value, 10)
         if churned(r):
-            churned_samples[i] = value
-            num_churned += 1
+            churned_samples.append(value)
         else:
-            no_churned_samples[i] = value
+            no_churned_samples.append(value)
 
-    churned_samples = churned_samples[:num_churned]
-    no_churned_samples = no_churned_samples[:(num_samples - num_churned)]
+    churned_samples = np.array(churned_samples)[:, np.newaxis]
+    no_churned_samples = np.array(no_churned_samples)[:, np.newaxis]
 
-    churned_dist = kde(churned_samples)
-    no_churned_dist = kde(no_churned_samples)
+    churned_dist = kde(churned_samples, bandwidth=bandwidth)
+    no_churned_dist = kde(no_churned_samples, bandwidth=bandwidth)
 
     X_plot = np.linspace(max(min(min(churned_samples), min(no_churned_samples)), 0),
                          max(max(churned_samples), max(no_churned_samples)),
                          1000)[1:, np.newaxis]
 
-
-
     fig, ax = plt.subplots()
 
     log_dens = churned_dist.score_samples(X_plot)
-    ax.plot(X_plot[:, 0], np.exp(log_dens), '-', label='Churned')
+    ax.plot(X_plot[:, 0], np.exp(log_dens), '-', label='Churned', color='r')
 
     log_dens = no_churned_dist.score_samples(X_plot)
     ax.plot(X_plot[:, 0], np.exp(log_dens), '-', label='No Churn')
 
     ax.legend(loc='upper left')
-    ax.plot(churned_samples[:, 0], -0.005 - 0.01 * np.random.random(churned_samples.shape[0]), '+r')
-    ax.plot(no_churned_samples[:, 0], -0.005 - 0.01 * np.random.random(no_churned_samples.shape[0]),
-            '.b')
+    plt.title('The distribution of %s' % feature_name)
+    plt.xlabel('log %s' % feature_name if log_x else feature_name)
+    plt.ylabel('Density')
+
+    ax.plot(no_churned_samples[:, 0], -0.01 - 0.05 * np.random.random(no_churned_samples.shape[0]),
+            '+b', alpha=0.1)
+    ax.plot(churned_samples[:, 0], -0.01 - 0.05 * np.random.random(churned_samples.shape[0]),
+            '.r', alpha=0.3)
     plt.show()
 
-def kde(churned_samples):
-    return KernelDensity(kernel='gaussian', bandwidth=0.2).fit(churned_samples)
+
+def kde(churned_samples, bandwidth):
+    return KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(churned_samples)
