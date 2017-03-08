@@ -248,11 +248,39 @@ class PreprocessingTest(unittest.TestCase):
 
         data, labels = preprocessing.labelled_training_data(rows, label_rows, features, 'churned')
 
-
     def assert_array_elements_equal(self, array, expected_array):
         for i, row in enumerate(array):
             for j, value in enumerate(row):
                 self.assertEqual(value, expected_array[i][j])
+
+    def test_parse_date(self):
+        string = '2015-01-02'
+        self.assertEqual(preprocessing.parse_date(string), 1420156800.0)
+
+    def test_extract_timeseries(self):
+
+        timeseries_features = {'price_1': None, 'price_2': None}
+
+        timeseries_rows = [
+            {'id': '1', 'price_date': '2015-01-01', 'price_1': 10, 'price_2': 1},
+            {'id': '1', 'price_date': '2015-02-01', 'price_1': 20, 'price_2': 2},
+            {'id': '2', 'price_date': '2015-01-01', 'price_1': 30, 'price_2': 3},
+            {'id': '2', 'price_date': '2015-02-01', 'price_1': 20, 'price_2': 2},
+            {'id': '2', 'price_date': '2015-03-01', 'price_1': 10, 'price_2': 1},
+        ]
+
+        expected_rows = [
+            {'id': '1',
+             'price_1': {1420070400.0: 10, 1422748800.0: 20},
+             'price_2': {1420070400.0: 1, 1422748800.0: 2}},
+            {'id': '2',
+             'price_1': {1420070400.0: 30, 1422748800.0: 20, 1425168000.0: 10},
+             'price_2': {1420070400.0: 3, 1422748800.0: 2, 1425168000.0: 1}}
+        ]
+
+        rows = preprocessing.extract_timeseries_rows(timeseries_rows, {}, timeseries_features)
+        self.assertItemsEqual([str(r) for r in expected_rows],
+                              [str(r) for r in rows])
 
 
 if __name__ == '__main__':

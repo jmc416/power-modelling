@@ -1,6 +1,7 @@
 from __future__ import division
 
 from datetime import date
+from itertools import groupby
 import time
 
 import numpy as np
@@ -47,6 +48,10 @@ def transform_categorical_features(rows, features):
     return output, value_maps
 
 
+def parse_date(value, date_format=DATE_FORMAT):
+    return time.mktime(time.strptime(value, date_format))
+
+
 def transform_dates(rows, features, date_format=DATE_FORMAT):
     """Return a new list of rows with the dates transformed into epoch seconds
 
@@ -63,7 +68,7 @@ def transform_dates(rows, features, date_format=DATE_FORMAT):
         elif not value:
             return EMPTY_DATE_POLICY
         else:
-            return time.mktime(time.strptime(value, date_format))
+            return parse_date(value, date_format)
 
     output = []
     for row in rows:
@@ -98,18 +103,46 @@ def normalise_features(rows, features):
 
 
 def timeseries_max(timeseries):
-    return max(timeseries)
+    return max(timeseries['values'])
 
 
 def timeseries_min(timeseries):
-    return min(timeseries)
+    return min(timeseries['values'])
 
 
 def timeseries_range(timeseries):
     return timeseries_max(timeseries) - timeseries_min(timeseries)
 
 
-def add_timeseries_features(rows, features, timeseries_features):
+def timeseries_moving_average(timeseries, n=3):
+    a = timeseries['values']
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+
+def extract_timeseries_rows(timeseries_rows, features, timeseries_features):
+    """Extract the timeseries
+
+    :param list[dict[str, Any]] timeseries_rows: a list of data
+    :param dict[str, dict[str, bool] features:
+    :param dict[str, dict[str, bool] timeseries_features:
+    :return The rows with extra features added, along with the extra features' details
+    :rtype tuple(list[dict[str, Any], list[list[str]])
+    """
+    output = []
+    for id, id_rows in groupby(timeseries_rows, key=lambda row: row['id']):
+        output_row = {'id': id}
+        id_rows = list(id_rows)
+        for feature_name in timeseries_features:
+            timeseries = {parse_date(id_row['price_date']): id_row[feature_name]
+                          for id_row in id_rows}
+            output_row[feature_name] = timeseries
+        output.append(output_row)
+    return output
+
+
+def add_timeseries_features(rows, timeseries_rows, features, timeseries_features):
     """Extract some features from timeseries features and add them to the features set
 
     :param list[dict[str, Any]] rows: a list of data
