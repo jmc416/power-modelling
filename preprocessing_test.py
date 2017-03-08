@@ -279,8 +279,7 @@ class PreprocessingTest(unittest.TestCase):
         ]
 
         rows = preprocessing.extract_timeseries_rows(timeseries_rows, {}, timeseries_features)
-        self.assertItemsEqual([str(r) for r in expected_rows],
-                              [str(r) for r in rows])
+        self.assertItemsEqual(expected_rows, rows)
 
 
 if __name__ == '__main__':
