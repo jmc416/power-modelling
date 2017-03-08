@@ -11,10 +11,10 @@ import numpy as np
 from sklearn.neighbors import KernelDensity
 
 import load
-
+import preprocessing
 
 def categorical_plot(feature_name, data_rows, label_rows, max_categories=30, ybottom=0.2):
-    """"""
+    """Plot the ratio of labels for each category"""
     churned = build_churned(label_rows)
 
     no_churn = Counter(r[feature_name] for r in data_rows if not churned(r))
@@ -69,15 +69,15 @@ def label_map(label_rows):
 
 def build_churned(label_rows):
     labels_by_id = label_map(label_rows)
+
     def churned(row):
         return labels_by_id[row['id']]
     return churned
 
 
 def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0.2):
-    """"""
+    """Plot the distribution of a feature, coloured by label"""
     churned = build_churned(label_rows)
-    num_samples = len(data_rows)
 
     churned_samples = []
     no_churned_samples = []
@@ -100,8 +100,11 @@ def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0
     churned_samples = np.array(churned_samples)[:, np.newaxis]
     no_churned_samples = np.array(no_churned_samples)[:, np.newaxis]
 
-    churned_dist = kde(churned_samples, bandwidth=bandwidth)
-    no_churned_dist = kde(no_churned_samples, bandwidth=bandwidth)
+    def kde(samples):
+        return KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(samples)
+
+    churned_dist = kde(churned_samples)
+    no_churned_dist = kde(no_churned_samples)
 
     X_plot = np.linspace(max(min(min(churned_samples), min(no_churned_samples)), 0),
                          max(max(churned_samples), max(no_churned_samples)),
@@ -127,5 +130,24 @@ def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0
     plt.show()
 
 
-def kde(churned_samples, bandwidth):
-    return KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(churned_samples)
+def timeseries_plot(feature_name, timeseries_rows, label_rows):
+    """Plot all the timeseries for a feature, coloured by label"""
+    churned = build_churned(label_rows)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for row in timeseries_rows:
+        try:
+            x, y = zip(*filter(lambda tup: tup[1] > 0.0,
+                               sorted([(k, float(v or 0)) for k, v in row[
+                                   feature_name].iteritems()],
+                                      key=lambda tup: tup[0]))
+                       )
+            ax.plot(x, y, '%ss-' % 'r' if churned(row) else 'b',
+                    alpha=0.2 if not churned(row) else 0.4, marker=None)
+        except:
+            print row[feature_name]
+
+    plt.xticks(x, [preprocessing.format_timestamp(t) for t in x], rotation='vertical')
+    plt.show()
+

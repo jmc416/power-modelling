@@ -5,14 +5,12 @@ FEATURES_FILE = 'features.csv'
 TEST_DATA_FILE = 'test_data.csv'
 TRAINING_DATA_FILE = 'train_data.csv'
 TRAINING_LABELS_FILE = 'train_output.csv'
-TRAINING_HISTORICAL_DATA_FILE = 'train_hist_data.csv'
+TRAINING_HISTORICAL_DATA_FILE = 'hist_data.csv'
 
 LABEL_NAME = 'churned'
 
-TIMESERIES_FEATURES = {
-    'price_var': ['price_p1_var', 'price_p2_var', 'price_p3_var'],
-    'price_fix': ['price_p1_fix', 'price_p2_fix', 'price_p3_fix'],
-}
+TIMESERIES_FEATURES = ['price_p1_var', 'price_p2_var', 'price_p3_var',
+                       'price_p1_fix', 'price_p2_fix', 'price_p3_fix']
 
 
 def extract_rows(file_path):
