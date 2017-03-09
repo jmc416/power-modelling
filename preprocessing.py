@@ -1,6 +1,7 @@
 from __future__ import division
 
 from datetime import date
+from itertools import chain
 from itertools import groupby
 import time
 
@@ -102,23 +103,22 @@ def normalise_features(rows, features):
     pass
 
 
-def timeseries_max(timeseries):
-    return max(timeseries['values'])
+def timeseries_max(_, y):
+    return max(y)
 
 
-def timeseries_min(timeseries):
-    return min(timeseries['values'])
+def timeseries_min(_, y):
+    return min(y)
 
 
-def timeseries_range(timeseries):
-    return timeseries_max(timeseries) - timeseries_min(timeseries)
+def timeseries_range(x, y):
+    return timeseries_max(x, y) - timeseries_min(x, y)
 
 
-def timeseries_moving_average(timeseries, n=3):
-    a = timeseries['values']
-    ret = np.cumsum(a, dtype=float)
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n - 1:] / n
+def timeseries_sum_returns(_, y):
+    """A simple measure of the direction of change of the timeseries"""
+    ret = [b - a for b, a in zip(y[1:], y[:-1])]
+    return sum(ret)
 
 
 def extract_timeseries_rows(timeseries_rows, features, timeseries_features):
@@ -142,25 +142,57 @@ def extract_timeseries_rows(timeseries_rows, features, timeseries_features):
     return output
 
 
-def add_timeseries_features(rows, timeseries_rows, features, timeseries_features):
+def make_xy(feature_name, row):
+    """Extract the timestamps and values (x, y) from a timeseries row"""
+    x, y = zip(*filter(lambda tup: tup[1] > 0.0,
+                       sorted([(k, float(v or 0)) for k, v in row[
+                           feature_name].iteritems()],
+                              key=lambda tup: tup[0]))
+               )
+    return x, y
+
+
+def add_timeseries_features(rows, timeseries_rows, features,
+                            timeseries_features, new_feature_names=None):
     """Extract some features from timeseries features and add them to the features set
 
     :param list[dict[str, Any]] rows: a list of data
     :param dict[str, dict[str, bool] features:
-    :param list[list[str]] timeseries_features:
+    :param dict[str, dict[str, bool] timeseries_features:
     :return The rows with extra features added, along with the extra features' details
     :rtype tuple(list[dict[str, Any], list[list[str]])
     """
     derived_features = {
-        'timeseries_max': {'name': 'timeseries_max', 'is_date': 0, 'is_categorical': 0,
-                           'function': timeseries_max},
-        'timeseries_min': {'name': 'timeseries_min', 'is_date': 0, 'is_categorical': 0,
-                           'function': timeseries_min},
-        'timeseries_range': {'name': 'timeseries_range', 'is_date': 0, 'is_categorical': 0,
-                             'function': timeseries_range},
+        'max': {'name': 'max', 'is_date': 0, 'is_categorical': 0,
+                'function': timeseries_max},
+        'min': {'name': 'min', 'is_date': 0, 'is_categorical': 0,
+                'function': timeseries_min},
+        'range': {'name': 'range', 'is_date': 0, 'is_categorical': 0,
+                  'function': timeseries_range},
+        'sum_returns': {'name': 'sum_returns', 'is_date': 0,
+                        'is_categorical': 0, 'function': timeseries_sum_returns},
     }
+    if new_feature_names:
+        derived_features = {k: derived_features[k]
+                            for k in new_feature_names if k in derived_features}
 
-    return rows
+    new_feature_template = {'is_date': 0, 'is_categorical': 0}
+    new_features = {}
+    # Assume that rows and timeseries rows are in the same order by id
+    for i, row in enumerate(rows):
+        timeseries_row = timeseries_rows[i]
+        for timeseries_name, timeseries in timeseries_row.iteritems():
+            if timeseries_name in timeseries_features:
+                for feature_name in derived_features:
+                    x, y = make_xy(timeseries_name, timeseries_row)
+                    derived_value = derived_features[feature_name]['function'](x, y)
+                    new_feature_name = timeseries_name + '_' + feature_name
+                    row[new_feature_name] = derived_value
+                    new_features[new_feature_name] = new_feature_template
+
+    # Add timeseries features to features
+    features = dict(chain(features.items(), new_features.items()))
+    return rows, features
 
 
 def vectorise(rows, features):

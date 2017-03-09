@@ -138,11 +138,7 @@ def timeseries_plot(feature_name, timeseries_rows, label_rows):
     ax = fig.add_subplot(111)
     for row in timeseries_rows:
         try:
-            x, y = zip(*filter(lambda tup: tup[1] > 0.0,
-                               sorted([(k, float(v or 0)) for k, v in row[
-                                   feature_name].iteritems()],
-                                      key=lambda tup: tup[0]))
-                       )
+            x, y = preprocessing.make_xy(feature_name, row)
             ax.plot(x, y, '%ss-' % 'r' if churned(row) else 'b',
                     alpha=0.2 if not churned(row) else 0.4, marker=None)
         except:
@@ -150,4 +146,5 @@ def timeseries_plot(feature_name, timeseries_rows, label_rows):
 
     plt.xticks(x, [preprocessing.format_timestamp(t) for t in x], rotation='vertical')
     plt.show()
+
 
