@@ -13,7 +13,9 @@ from sklearn.neighbors import KernelDensity
 import load
 import preprocessing
 
-def categorical_plot(feature_name, data_rows, label_rows, max_categories=30, ybottom=0.2):
+
+def categorical_plot(feature_name, data_rows, label_rows, max_categories=30, ybottom=0.2,
+                     show=False, save=True):
     """Plot the ratio of labels for each category"""
     churned = build_churned(label_rows)
 
@@ -59,7 +61,15 @@ def categorical_plot(feature_name, data_rows, label_rows, max_categories=30, ybo
     plt.xlim([-1 / num_categories, num_categories + 1 / num_categories])
     plt.ylim([-.01, 1.1])
 
-    plt.show()
+    show_or_save(feature_name, save, show)
+
+
+def show_or_save(feature_name, save, show):
+    if show:
+        plt.show()
+    if save:
+        plt.savefig(feature_name + '.png')
+        plt.gcf().clear()
 
 
 def label_map(label_rows):
@@ -75,7 +85,8 @@ def build_churned(label_rows):
     return churned
 
 
-def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0.2):
+def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0.2, show=False,
+                    save=True):
     """Plot the distribution of a feature, coloured by label"""
     churned = build_churned(label_rows)
 
@@ -83,12 +94,10 @@ def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0
     no_churned_samples = []
     for i, r in enumerate(data_rows):
         if not r[feature_name]:
-            print 'skip'
             continue
         value = np.float64(r[feature_name])
         if log_x:
             if value <= 0:
-                print 'skip zero or neg'
                 continue
             else:
                 value = math.log(value, 10)
@@ -127,7 +136,8 @@ def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0
             '+b', alpha=0.1)
     ax.plot(churned_samples[:, 0], -0.01 - 0.05 * np.random.random(churned_samples.shape[0]),
             '.r', alpha=0.3)
-    plt.show()
+
+    show_or_save(feature_name, save, show)
 
 
 def timeseries_plot(feature_name, timeseries_rows, label_rows):
