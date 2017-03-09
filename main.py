@@ -50,6 +50,8 @@ def plot_all_features(plot_categorical=True, plot_continuous=True,
 
             elif plot_continuous:
                 visualisation.continuous_plot(feature_name, data_rows, label_rows,
-                                              log_x=not bool(int(feature['is_date'])))
+                                              log_x=not (bool(int(feature['is_date'])) or int(
+                                                  feature['log_x'])),
+                                              bandwidth=float(feature['bandwidth']))
         except Exception as e:
-            e
+            print e
