@@ -281,6 +281,37 @@ class PreprocessingTest(unittest.TestCase):
         rows = preprocessing.extract_timeseries_rows(timeseries_rows, {}, timeseries_features)
         self.assertItemsEqual(expected_rows, rows)
 
+    def test_moving_average(self):
+        y = [3, 2, 2, 4]
+
+        output = preprocessing.timeseries_sum_returns([], y)
+        self.assertEqual(output, 1)
+
+    def test_add_timeseries_features(self):
+        rows = [
+            {'id': '1'}, {'id': '2'}
+        ]
+        features = {}
+        timeseries_features = {'price_1'}
+
+        timeseries_rows = [
+            {'id': '2',
+             'price_1': {1420070400.0: 30, 1422748800.0: 20, 1425168000.0: 10},
+             'price_2': {1420070400.0: 3, 1422748800.0: 2, 1425168000.0: 1}},
+            {'id': '1',
+             'price_1': {1420070400.0: 10, 1422748800.0: 20},
+             'price_2': {1420070400.0: 1, 1422748800.0: 2}},
+        ]
+
+        expected_rows = [
+            {'id': '1', 'price_1_max': 20.0},
+            {'id': '2', 'price_1_max': 30.0},
+        ]
+
+        output_rows, output_features = preprocessing.add_timeseries_features(
+            rows, timeseries_rows, features, timeseries_features, ['max'])
+        self.assertEqual(expected_rows, output_rows)
+
 
 if __name__ == '__main__':
     unittest.main()
