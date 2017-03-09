@@ -289,7 +289,7 @@ class PreprocessingTest(unittest.TestCase):
 
     def test_add_timeseries_features(self):
         rows = [
-            {'id': 1}, {'id': 2}
+            {'id': '1'}, {'id': '2'}
         ]
         features = {}
         timeseries_features = {'price_1'}
@@ -304,8 +304,8 @@ class PreprocessingTest(unittest.TestCase):
         ]
 
         expected_rows = [
-            {'id': 1, 'price_1_max': 20.0},
-            {'id': 2, 'price_1_max': 30.0},
+            {'id': '1', 'price_1_max': 20.0},
+            {'id': '2', 'price_1_max': 30.0},
         ]
 
         output_rows, output_features = preprocessing.add_timeseries_features(

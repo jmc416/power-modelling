@@ -181,6 +181,7 @@ def add_timeseries_features(rows, timeseries_rows, features,
     # Assume that rows and timeseries rows are in the same order by id
     for i, row in enumerate(rows):
         timeseries_row = timeseries_rows[i]
+        assert timeseries_row['id'] == row['id']
         for timeseries_name, timeseries in timeseries_row.iteritems():
             if timeseries_name in timeseries_features:
                 for feature_name in derived_features:
