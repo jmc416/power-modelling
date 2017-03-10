@@ -6,6 +6,7 @@ TEST_DATA_FILE = 'test_data.csv'
 TRAINING_DATA_FILE = 'train_data.csv'
 TRAINING_LABELS_FILE = 'train_output.csv'
 TRAINING_HISTORICAL_DATA_FILE = 'hist_data.csv'
+TEST_HISTORICAL_DATA_FILE = 'test_hist_data.csv'
 
 LABEL_NAME = 'churned'
 
@@ -36,6 +37,10 @@ def load_historical_training_data():
     return extract_rows(TRAINING_HISTORICAL_DATA_FILE)
 
 
+def load_historical_test_data():
+    return extract_rows(TEST_HISTORICAL_DATA_FILE)
+
+
 def load_features():
     return {row['name']: row for row in extract_rows(FEATURES_FILE)}
 
@@ -49,4 +54,3 @@ def load_training_labels():
     with open(TRAINING_LABELS_FILE) as f:
         labels = [int(r.strip()) for r in f.readlines()]
     return [{'id': _id, LABEL_NAME: label} for _id, label in zip(ids, labels)]
-

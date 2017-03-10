@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.naive_bayes import GaussianNB
 
 import load
 import preprocessing
@@ -49,6 +50,12 @@ def fit_forest(X, y):
     forest = ExtraTreesClassifier(n_estimators=250, random_state=0)
     forest.fit(X, y)
     return forest
+
+
+def fit_naive_bayes(X, y):
+    gnb = GaussianNB()
+    gnb.fit(X, y)
+    return gnb
 
 
 def feature_importances(X, y):

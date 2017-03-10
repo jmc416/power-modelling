@@ -25,7 +25,7 @@ def transform_categorical_features(rows, features):
     print 'Transforming categorical features'
     categorical_features = {feature_name: {}
                             for feature_name, feature in features.iteritems()
-                            if int(feature['is_categorical'])}
+                            if int(feature['is_categorical']) and feature_name != 'id'}
 
     def transform(feature, value):
         if feature not in categorical_features:
@@ -190,24 +190,20 @@ def add_timeseries_features(rows, timeseries_rows, features,
     new_feature_template = {'is_date': 0, 'is_categorical': 0, 'log_x': False, 'bandwidth': 0.2}
     new_features = {}
 
-    timeseries_rows_index = {row['id']: i for i, row in enumerate(timeseries_rows)}
+    timeseries_rows_index = {row['id']: int(i) for i, row in enumerate(timeseries_rows)}
 
     for i, row in enumerate(rows):
-        try:
-            timeseries_row = timeseries_rows[timeseries_rows_index[row['id']]]
-            assert timeseries_row['id'] == row['id']
-            for timeseries_name, timeseries in timeseries_row.iteritems():
-                if timeseries_name in timeseries_features:
-                    for feature_name in derived_features:
-                        x, y = make_xy(timeseries_name, timeseries_row)
-                        derived_value = derived_features[feature_name]['function'](x, y)
-                        new_feature_name = timeseries_name + '_' + feature_name
-                        row[new_feature_name] = derived_value
-                        new_features[new_feature_name] = new_feature_template
-        except Exception as e:
-            print row
-            print e
-            pass
+        ts_index = int(timeseries_rows_index[row['id']])
+        timeseries_row = timeseries_rows[ts_index]
+        assert timeseries_row['id'] == row['id']
+        for timeseries_name, timeseries in timeseries_row.iteritems():
+            if timeseries_name in timeseries_features:
+                for feature_name in derived_features:
+                    x, y = make_xy(timeseries_name, timeseries_row)
+                    derived_value = derived_features[feature_name]['function'](x, y)
+                    new_feature_name = timeseries_name + '_' + feature_name
+                    row[new_feature_name] = derived_value
+                    new_features[new_feature_name] = new_feature_template
 
     # Add timeseries features to features
     features = dict(chain(features.items(), new_features.items()))
@@ -270,13 +266,28 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
         rows.append(row)
         labels.append(labels_by_id[id][label_name])
 
-    rows, _ = transform_categorical_features(rows, features)
-    rows = transform_dates(rows, features)
-
     features = {name: features[name] for name in rows[0].iterkeys()}
     data = vectorise(rows, features)
 
     X = encode_categorical_features(data, features)
     y = np.array([np.float64(1 if label else 0) for label in labels])
     return X, y
+
+
+def test_data(data_rows, features):
+    """Return processed and vectorised data
+
+    :param list[dict[str, Any]] data_rows:
+    :param list[dict[str, Any]] label_rows:
+    :param dict[str, dict[str, bool]] features:
+    :param str label_name:
+    :rtype: tuple[np.array, np.array]
+    """
+
+    features = {name: features[name] for name in data_rows[0].iterkeys()}
+    data = vectorise(data_rows, features)
+
+    X = encode_categorical_features(data, features)
+    return X
+
 
