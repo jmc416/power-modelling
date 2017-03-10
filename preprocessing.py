@@ -187,7 +187,7 @@ def add_timeseries_features(rows, timeseries_rows, features,
         derived_features = {k: derived_features[k]
                             for k in new_feature_names if k in derived_features}
 
-    new_feature_template = {'is_date': 0, 'is_categorical': 0}
+    new_feature_template = {'is_date': 0, 'is_categorical': 0, 'log_x': False, 'bandwidth': 0.2}
     new_features = {}
 
     timeseries_rows_index = {row['id']: i for i, row in enumerate(timeseries_rows)}

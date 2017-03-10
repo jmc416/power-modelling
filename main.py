@@ -43,15 +43,19 @@ def plot_all_features(plot_categorical=True, plot_continuous=True,
             continue
 
         print 'Plotting ', feature_name
+        print feature
 
-        try:
-            if int(feature['is_categorical']) and plot_categorical:
-                visualisation.categorical_plot(feature_name, data_rows, label_rows)
+        if int(feature['is_categorical']) and plot_categorical:
+            visualisation.categorical_plot(feature_name, data_rows, label_rows)
 
-            elif plot_continuous:
-                visualisation.continuous_plot(feature_name, data_rows, label_rows,
-                                              log_x=not (bool(int(feature['is_date'])) or int(
-                                                  feature['log_x'])),
-                                              bandwidth=float(feature['bandwidth']))
-        except Exception as e:
-            print e
+        elif plot_continuous:
+            visualisation.continuous_plot(feature_name, data_rows, label_rows,
+                                          log_x=should_log_x(feature),
+                                          bandwidth=float(feature['bandwidth']) or 0.2,
+                                          is_date=bool(int(feature['is_date'])))
+
+
+def should_log_x(feature):
+    log_x = bool(int(feature['log_x']))
+    is_date = bool(int(feature['is_date']))
+    return log_x and not is_date
