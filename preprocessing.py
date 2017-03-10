@@ -259,7 +259,8 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
     for row in data_rows:
         for name, feature in features.iteritems():
             if bool(int(feature['is_categorical'])):
-                row.pop(name)
+                if name in row and name != 'id':
+                    row.pop(name)
 
     data_by_id = {row['id']: row for row in data_rows}
     labels_by_id = {row['id']: row for row in label_rows}
@@ -277,9 +278,9 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
     features = {name: features[name] for name in rows[0].iterkeys() if name != 'id'}
     data = vectorise(rows, features)
 
-    X = encode_categorical_features(data, features)
+    # X = encode_categorical_features(data, features)
     y = np.array([np.float64(1 if label else 0) for label in labels])
-    return X, y
+    return data, y
 
 
 def test_data(data_rows, features, training_rows):
@@ -306,14 +307,16 @@ def test_data(data_rows, features, training_rows):
         row.pop('id')
         for name, feature in features.iteritems():
             if bool(int(feature['is_categorical'])):
-                row.pop(name)
+                if name in row:
+                    row.pop(name)
         # for name, category_set in category_sets.iteritems():
         #     if row[name] not in category_set:
         #         row[name] = ''
 
     data = vectorise(data_rows, features)
+    return data
 
-    X = encode_categorical_features(data, features).toarray()
-    return sparse.coo_matrix(X[:-len(training_rows)])
+    # X = encode_categorical_features(data, features).toarray()
+    # return sparse.coo_matrix(X[:-len(training_rows)])
 
 
