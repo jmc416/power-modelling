@@ -16,11 +16,12 @@ def load_model_data():
 
 def load_test_data():
     """
-    
-    """
-    data_rows, features = load_test_rows(True, True, True)
 
-    X = preprocessing.test_data(data_rows, features)
+    """
+    training_rows, features, _ = load_training_rows(True, True, True)
+    data_rows, _ = load_test_rows(True, True, True)
+
+    X = preprocessing.test_data(data_rows, features, training_rows)
 
     return X
 
@@ -30,8 +31,8 @@ def load_test_rows(transform_dates=True, transform_categorical_features=False,
     """
 
     """
-    data_rows = load.load_training_data()
-    historical_data = load.load_historical_training_data()
+    data_rows = load.load_test_data()
+    historical_data = load.load_historical_test_data()
     features = load.load_features()
     timeseries_features = load.TIMESERIES_FEATURES
 
@@ -63,11 +64,14 @@ def load_training_rows(transform_dates=True, transform_categorical_features=Fals
 
 def transformations(add_timeseries_features, data_rows, features, historical_data,
                     timeseries_features, transform_categorical_features, transform_dates):
+    """Transform the data"""
     if transform_dates:
         data_rows = preprocessing.transform_dates(data_rows, features)
+
     if transform_categorical_features:
         data_rows, categorical_value_maps = preprocessing.transform_categorical_features(data_rows,
                                                                                          features)
+
     if add_timeseries_features:
         timeseries_rows = preprocessing.extract_timeseries_rows(historical_data, features,
                                                                 timeseries_features)

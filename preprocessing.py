@@ -1,11 +1,13 @@
 from __future__ import division
 
+import collections
 from datetime import date
 from itertools import chain
 from itertools import groupby
 import time
 
 import numpy as np
+import scipy.sparse as sparse
 from sklearn.preprocessing import OneHotEncoder
 
 EMPTY_DATE_POLICY = 0
@@ -240,6 +242,7 @@ def encode_categorical_features(data, features):
     feature_names = sorted(features.keys())
     categorical_features = [True if int(features[feature]['is_categorical']) else False
                             for feature in feature_names]
+    print zip(feature_names, categorical_features)
     enc = OneHotEncoder(categorical_features=categorical_features)
     return enc.fit_transform(data)
 
@@ -266,7 +269,7 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
         rows.append(row)
         labels.append(labels_by_id[id][label_name])
 
-    features = {name: features[name] for name in rows[0].iterkeys()}
+    features = {name: features[name] for name in rows[0].iterkeys() if name != 'id'}
     data = vectorise(rows, features)
 
     X = encode_categorical_features(data, features)
@@ -274,7 +277,7 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
     return X, y
 
 
-def test_data(data_rows, features):
+def test_data(data_rows, features, training_rows):
     """Return processed and vectorised data
 
     :param list[dict[str, Any]] data_rows:
@@ -284,10 +287,25 @@ def test_data(data_rows, features):
     :rtype: tuple[np.array, np.array]
     """
 
-    features = {name: features[name] for name in data_rows[0].iterkeys()}
-    data = vectorise(data_rows, features)
+    features = {name: features[name] for name in data_rows[0].iterkeys() if name != 'id'}
 
-    X = encode_categorical_features(data, features)
-    return X
+    category_sets = collections.defaultdict(set)
+
+    for row in training_rows:
+        for name, feature in features.iteritems():
+            if feature['is_categorical']:
+                s = category_sets[name]
+                s.union({row[name]})
+
+    for row in data_rows:
+        row.pop('id')
+        for name, category_set in category_sets.iteritems():
+            if row[name] not in category_set:
+                row[name] = ''
+
+    data = vectorise(data_rows + training_rows, features)
+
+    X = encode_categorical_features(data, features).toarray()
+    return sparse.coo_matrix(X[:-len(training_rows)])
 
 

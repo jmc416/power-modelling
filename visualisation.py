@@ -151,7 +151,7 @@ def continuous_plot(feature_name, data_rows, label_rows, log_x=True, bandwidth=0
     show_or_save(feature_name, save, show)
 
 
-def timeseries_plot(feature_name, timeseries_rows, label_rows):
+def timeseries_plot(feature_name, timeseries_rows, label_rows, save=True, show=False):
     """Plot all the timeseries for a feature, coloured by label"""
     churned = build_churned(label_rows)
 
@@ -166,6 +166,7 @@ def timeseries_plot(feature_name, timeseries_rows, label_rows):
             print row[feature_name]
 
     plt.xticks(x, [preprocessing.format_timestamp(t) for t in x], rotation='vertical')
-    plt.show()
+    plt.tight_layout()
+    show_or_save(feature_name, save, show)
 
 
