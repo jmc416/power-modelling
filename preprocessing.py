@@ -256,6 +256,11 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
     :param str label_name:
     :rtype: tuple[np.array, np.array]
     """
+    for row in data_rows:
+        for name, feature in features.iteritems():
+            if bool(int(feature['is_categorical'])):
+                row.pop(name)
+
     data_by_id = {row['id']: row for row in data_rows}
     labels_by_id = {row['id']: row for row in label_rows}
     ids = list(set(data_by_id.keys()).intersection(set(labels_by_id.keys())))
@@ -299,11 +304,14 @@ def test_data(data_rows, features, training_rows):
 
     for row in data_rows:
         row.pop('id')
-        for name, category_set in category_sets.iteritems():
-            if row[name] not in category_set:
-                row[name] = ''
+        for name, feature in features.iteritems():
+            if bool(int(feature['is_categorical'])):
+                row.pop(name)
+        # for name, category_set in category_sets.iteritems():
+        #     if row[name] not in category_set:
+        #         row[name] = ''
 
-    data = vectorise(data_rows + training_rows, features)
+    data = vectorise(data_rows, features)
 
     X = encode_categorical_features(data, features).toarray()
     return sparse.coo_matrix(X[:-len(training_rows)])
