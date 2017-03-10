@@ -1,6 +1,31 @@
 import load
+import models
 import preprocessing
 import visualisation
+
+
+def classify_and_predict():
+
+    X, y = load_model_data()
+    test_X = load_test_data()
+
+    model = models.fit_bagged_decision_tree(X, y)
+
+    output_labels = model.predict(test_X)
+
+    probabilities = model.predict_proba(test_X)
+
+    data_rows, _ = load_test_rows(False, False, False)
+
+    output = []
+    for i, row in enumerate(data_rows):
+        output.append((row['id'], probabilities[i][0], output_labels[i]))
+
+    sorted_scores = sorted(output, key=lambda r: r[2])
+    with open('output_scores', 'w') as f:
+        f.writelines([str(r) + '\n' for r in sorted_scores])
+
+    return output_labels, probabilities
 
 
 def load_model_data():

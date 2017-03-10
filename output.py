@@ -1,7 +1,7 @@
 import csv
 
 
-OUTPUT_FILE = 'output.csv'
+OUTPUT_FILE = 'output_scores.csv'
 
 
 def append(id, score, churned):

@@ -283,7 +283,7 @@ def labelled_training_data(data_rows, label_rows, features, label_name):
     return data, y
 
 
-def test_data(data_rows, features, training_rows):
+def test_data(data_rows, features):
     """Return processed and vectorised data
 
     :param list[dict[str, Any]] data_rows:
@@ -294,14 +294,14 @@ def test_data(data_rows, features, training_rows):
     """
 
     features = {name: features[name] for name in data_rows[0].iterkeys() if name != 'id'}
-
-    category_sets = collections.defaultdict(set)
-
-    for row in training_rows:
-        for name, feature in features.iteritems():
-            if feature['is_categorical']:
-                s = category_sets[name]
-                s.union({row[name]})
+    #
+    # category_sets = collections.defaultdict(set)
+    #
+    # for row in training_rows:
+    #     for name, feature in features.iteritems():
+    #         if feature['is_categorical']:
+    #             s = category_sets[name]
+    #             s.union({row[name]})
 
     for row in data_rows:
         row.pop('id')
